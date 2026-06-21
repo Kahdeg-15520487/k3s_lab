@@ -1,0 +1,11 @@
+# TLSStore: sets the wildcard cert as Traefik's default certificate
+# All IngressRoutes on websecure without explicit tls.secretName inherit this cert
+apiVersion: traefik.io/v1alpha1
+kind: TLSStore
+
+metadata:
+  name: default
+  namespace: kube-system
+spec:
+  defaultCertificate:
+    secretName: wildcard-minhnguyenle-net-tls

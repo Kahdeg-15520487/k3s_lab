@@ -5,9 +5,11 @@ kind: IngressRoute
 metadata:
   name: traefik-dashboard
 spec:
+  entryPoints:
+  - websecure
   routes:
   - kind: Rule
-    match: Host(`traefik.homelab.cloud`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+    match: Host(`traefik.minhnguyenle.net`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
     services:
     - name: api@internal
       kind: TraefikService

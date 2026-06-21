@@ -8,11 +8,9 @@ spec:
   entryPoints:
   - websecure
   routes:
-  - match: Host(`headlamp.homelab.cloud`)
+  - match: Host(`headlamp.minhnguyenle.net`)
     kind: Rule
     services:
     - name: headlamp
       kind: Service
       port: 80
-  tls:
-    secretName: headlamp.homelab.cloud-tls

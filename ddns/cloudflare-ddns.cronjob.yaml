@@ -1,0 +1,108 @@
+# Cloudflare DDNS CronJob
+# Runs every 5 minutes: detects public IP changes and updates Cloudflare DNS
+apiVersion: batch/v1
+kind: CronJob
+
+metadata:
+  name: cloudflare-ddns
+  namespace: ddns
+  labels:
+    app: cloudflare-ddns
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 60
+      template:
+        metadata:
+          labels:
+            app: cloudflare-ddns
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: ddns
+            image: curlimages/curl:8.12.1
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "=== DDNS check started ==="
+
+              # Get public IP (try multiple endpoints)
+              IP=$(curl -sf --max-time 10 https://ifconfig.me 2>/dev/null)
+              [ -z "$IP" ] && IP=$(curl -sf --max-time 10 https://icanhazip.com 2>/dev/null)
+              [ -z "$IP" ] && IP=$(curl -sf --max-time 10 https://api.ipify.org 2>/dev/null)
+              if [ -z "$IP" ]; then
+                echo "ERROR: Could not determine public IP from any endpoint"
+                exit 1
+              fi
+              echo "Public IP: $IP"
+
+              # Get Cloudflare zone ID for minhnguyenle.net
+              ZONE=$(curl -sf --max-time 10 \
+                -H "Authorization: Bearer $CF_API_TOKEN" \
+                -H "Content-Type: application/json" \
+                "https://api.cloudflare.com/client/v4/zones?name=minhnguyenle.net")
+              ZONE_ID=$(echo "$ZONE" | grep -o '"id":"[^"]*"' | head -1 | sed 's/"id":"//;s/"//')
+              if [ -z "$ZONE_ID" ]; then
+                echo "ERROR: Could not find zone for minhnguyenle.net"
+                echo "API response: $ZONE"
+                exit 1
+              fi
+              echo "Zone ID: $ZONE_ID"
+
+              # Get current DNS A record for *.minhnguyenle.net
+              RECORD=$(curl -sf --max-time 10 \
+                -H "Authorization: Bearer $CF_API_TOKEN" \
+                -H "Content-Type: application/json" \
+                "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=A&name=*.minhnguyenle.net")
+              RECORD_ID=$(echo "$RECORD" | grep -o '"id":"[^"]*"' | head -1 | sed 's/"id":"//;s/"//')
+              CURRENT_IP=$(echo "$RECORD" | grep -o '"content":"[^"]*"' | head -1 | sed 's/"content":"//;s/"//')
+
+              if [ -z "$RECORD_ID" ]; then
+                echo "No existing A record for *.minhnguyenle.net, creating..."
+                CREATE=$(curl -sf --max-time 10 -X POST \
+                  -H "Authorization: Bearer $CF_API_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"type\":\"A\",\"name\":\"*.minhnguyenle.net\",\"content\":\"$IP\",\"ttl\":120,\"proxied\":false}" \
+                  "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records")
+                SUCCESS=$(echo "$CREATE" | grep -o '"success":[^,}]*' | head -1 | sed 's/"success"://')
+                echo "Create result: success=$SUCCESS"
+              elif [ "$IP" != "$CURRENT_IP" ]; then
+                echo "IP changed: $CURRENT_IP -> $IP, updating..."
+                UPDATE=$(curl -sf --max-time 10 -X PUT \
+                  -H "Authorization: Bearer $CF_API_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"type\":\"A\",\"name\":\"*.minhnguyenle.net\",\"content\":\"$IP\",\"ttl\":120,\"proxied\":false}" \
+                  "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID")
+                SUCCESS=$(echo "$UPDATE" | grep -o '"success":[^,}]*' | head -1 | sed 's/"success"://')
+                echo "Update result: success=$SUCCESS"
+              else
+                echo "IP unchanged: $IP (record: $CURRENT_IP)"
+              fi
+
+              echo "=== DDNS check complete ==="
+            env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-ddns-api-token
+                  key: api-token
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            resources:
+              requests:
+                cpu: 10m
+                memory: 16Mi
+              limits:
+                cpu: 50m
+                memory: 32Mi

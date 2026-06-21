@@ -1,0 +1,23 @@
+# Wildcard TLS certificate for *.minhnguyenle.net
+# Managed by cert-manager via Let's Encrypt staging
+apiVersion: cert-manager.io/v1
+kind: Certificate
+
+metadata:
+  name: wildcard-minhnguyenle-net
+  namespace: kube-system
+spec:
+  secretName: wildcard-minhnguyenle-net-tls
+  duration: 2160h  # 90 days
+  renewBefore: 360h # 15 days before expiry
+  dnsNames:
+  - '*.minhnguyenle.net'
+  privateKey:
+    algorithm: ECDSA
+    size: 384
+    encoding: PKCS8
+    rotationPolicy: Always
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+    group: cert-manager.io

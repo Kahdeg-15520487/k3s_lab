@@ -1,2 +1,4 @@
 .pi/
 traefik-dashboard/secrets/users
+cert-manager/acme/cloudflare-api-token-secret.env
+ddns/cloudflare-ddns-api-token.env

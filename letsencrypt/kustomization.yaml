@@ -1,0 +1,9 @@
+# Let's Encrypt wildcard certificate + Traefik default TLS
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kube-system
+
+resources:
+- wildcard-minhnguyenle-net.certificate.yaml
+- default-tlsstore.yaml

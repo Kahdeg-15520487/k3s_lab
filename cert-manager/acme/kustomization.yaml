@@ -1,0 +1,15 @@
+# Let's Encrypt ACME setup
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cert-manager
+
+resources:
+- letsencrypt.cluster-issuer.yaml
+
+secretGenerator:
+- name: cloudflare-api-token-secret
+  envs:
+  - cloudflare-api-token-secret.env
+  options:
+    disableNameSuffixHash: true
