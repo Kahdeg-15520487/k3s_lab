@@ -1,0 +1,9 @@
+# SPF-MMO — multiplayer logistics simulation
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: spf-mmo
+
+resources:
+- server.yaml
+- client-ingress.yaml

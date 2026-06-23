@@ -1,0 +1,58 @@
+# OSRM Vietnam routing engine
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: osrm-vietnam
+  namespace: osrm
+  labels:
+    app: osrm-vietnam
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: osrm-vietnam
+  template:
+    metadata:
+      labels:
+        app: osrm-vietnam
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k3sagent01
+      containers:
+      - name: osrm
+        image: ghcr.io/kahdeg-15520487/spf-osrm-vietnam:latest
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 6Gi
+        readinessProbe:
+          httpGet:
+            path: /route/v1/driving/0,0;1,1
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osrm-vietnam
+  namespace: osrm
+spec:
+  selector:
+    app: osrm-vietnam
+  ports:
+  - port: 5000
+    targetPort: 5000

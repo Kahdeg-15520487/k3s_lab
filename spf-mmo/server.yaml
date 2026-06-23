@@ -1,0 +1,74 @@
+# SPF-MMO backend server — API + WebSocket + SQLite
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: spf-mmo-server
+  namespace: spf-mmo
+  labels:
+    app: spf-mmo-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: spf-mmo-server
+  template:
+    metadata:
+      labels:
+        app: spf-mmo-server
+    spec:
+      containers:
+      - name: server
+        image: 127.0.0.1:30500/spf-mmo-server:latest
+        ports:
+        - containerPort: 13110
+        env:
+        - name: OSRM_URL
+          value: http://osrm-vietnam.osrm.svc.homelab.cluster:5000
+        - name: PORT
+          value: "13110"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: prisma-data
+          mountPath: /app/prisma
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: prisma-data
+        persistentVolumeClaim:
+          claimName: spf-mmo-prisma
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spf-mmo-prisma
+  namespace: spf-mmo
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spf-mmo-server
+  namespace: spf-mmo
+spec:
+  selector:
+    app: spf-mmo-server
+  ports:
+  - port: 13110
+    targetPort: 13110
