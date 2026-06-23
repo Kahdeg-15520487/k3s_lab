@@ -1,0 +1,15 @@
+# Centralized PostgreSQL — shared database for all services
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: postgres
+
+resources:
+- postgres.yaml
+
+secretGenerator:
+- name: postgres-secret
+  envs:
+  - postgres-secret.env
+  options:
+    disableNameSuffixHash: true
