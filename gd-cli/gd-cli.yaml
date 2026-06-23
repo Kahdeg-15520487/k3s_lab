@@ -22,9 +22,19 @@ spec:
       containers:
       - name: gd-cli
         image: 127.0.0.1:30500/gd-cli:latest
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /home/node/.config/rclone /home/node/.gdrive-cli
+          cp /secrets/rclone.conf /home/node/.config/rclone/rclone.conf
+          cp /secrets/gdrive-config.json /home/node/.gdrive-cli/config.json
+          exec node /app/dist/web/server.js
         ports:
         - containerPort: 3000
         env:
+        - name: HOME
+          value: /home/node
         - name: DB_HOST
           value: postgres.postgres.svc.homelab.cluster
         - name: DB_PORT
@@ -45,12 +55,31 @@ spec:
           limits:
             cpu: 500m
             memory: 256Mi
+        volumeMounts:
+        - name: rclone-secret
+          mountPath: /secrets/rclone.conf
+          subPath: rclone.conf
+        - name: gdrive-secret
+          mountPath: /secrets/gdrive-config.json
+          subPath: config.json
+        - name: gdrive-tmp
+          mountPath: /tmp/gdrive
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
           capabilities:
             drop:
             - ALL
+      volumes:
+      - name: rclone-secret
+        secret:
+          secretName: rclone-config
+          defaultMode: 0444
+      - name: gdrive-secret
+        secret:
+          secretName: gdrive-config
+          defaultMode: 0444
+      - name: gdrive-tmp
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
