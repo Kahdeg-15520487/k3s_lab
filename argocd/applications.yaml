@@ -51,7 +51,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Kahdeg-15520487/spf-mmo
-    targetRevision: main
+    targetRevision: master
     path: charts/spf-mmo
     helm:
       valueFiles:
