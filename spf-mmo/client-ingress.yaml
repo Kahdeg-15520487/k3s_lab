@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: client
-        image: 127.0.0.1:30500/spf-mmo-client:latest
+        image: ghcr.io/kahdeg-15520487/spf-client:latest
         ports:
         - containerPort: 13112
         env:

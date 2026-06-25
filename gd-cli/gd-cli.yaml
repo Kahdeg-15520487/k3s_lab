@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: gd-cli
-        image: 127.0.0.1:30500/gd-cli:latest
+        image: ghcr.io/kahdeg-15520487/gd-dtv:latest
         command:
         - sh
         - -c

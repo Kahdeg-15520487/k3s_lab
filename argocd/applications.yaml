@@ -1,0 +1,65 @@
+# ArgoCD Applications — GitOps for all repos
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: infra
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kahdeg-15520487/homelab-k8s
+    targetRevision: master
+    path: .
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: gd-dtv
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kahdeg-15520487/gd-dtv
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gd-cli
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: spf-mmo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Kahdeg-15520487/spf-mmo
+    targetRevision: main
+    path: charts/spf-mmo
+    helm:
+      valueFiles:
+      - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: spf-mmo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
