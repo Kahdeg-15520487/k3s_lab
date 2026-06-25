@@ -86,6 +86,26 @@ spec:
                 echo "IP unchanged: $IP (record: $CURRENT_IP)"
               fi
 
+              # Also update apex A record (minhnguyenle.net)
+              APEX_RECORD=$(curl -sf --max-time 10 \
+                -H "Authorization: Bearer $CF_API_TOKEN" \
+                -H "Content-Type: application/json" \
+                "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=A&name=minhnguyenle.net")
+              APEX_ID=$(echo "$APEX_RECORD" | grep -o '"id":"[^"]*"' | head -1 | sed 's/"id":"//;s/"//')
+              APEX_IP=$(echo "$APEX_RECORD" | grep -o '"content":"[^"]*"' | head -1 | sed 's/"content":"//;s/"//')
+
+              if [ -n "$APEX_ID" ] && [ "$IP" != "$APEX_IP" ]; then
+                echo "Apex IP changed: $APEX_IP -> $IP, updating..."
+                curl -sf --max-time 10 -X PUT \
+                  -H "Authorization: Bearer $CF_API_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"type\":\"A\",\"name\":\"minhnguyenle.net\",\"content\":\"$IP\",\"ttl\":120,\"proxied\":false}" \
+                  "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$APEX_ID" > /dev/null
+                echo "Apex updated"
+              else
+                echo "Apex IP unchanged: $APEX_IP"
+              fi
+
               echo "=== DDNS check complete ==="
             env:
             - name: CF_API_TOKEN
