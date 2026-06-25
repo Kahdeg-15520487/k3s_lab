@@ -20,7 +20,7 @@ spec:
         app: osrm-vietnam
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k3sagent01
+        kubernetes.io/hostname: k3sagent03
       containers:
       - name: osrm
         image: ghcr.io/kahdeg-15520487/spf-osrm-vietnam:latest
