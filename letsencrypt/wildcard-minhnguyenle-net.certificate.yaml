@@ -11,6 +11,7 @@ spec:
   duration: 2160h  # 90 days
   renewBefore: 360h # 15 days before expiry
   dnsNames:
+  - 'minhnguyenle.net'
   - '*.minhnguyenle.net'
   privateKey:
     algorithm: ECDSA
