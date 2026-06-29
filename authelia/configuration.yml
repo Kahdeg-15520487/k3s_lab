@@ -27,12 +27,9 @@ access_control:
       policy: bypass
     - domain:
         - "opencode.minhnguyenle.net"
+        - "argocd.minhnguyenle.net"
+        - "headlamp.minhnguyenle.net"
       policy: one_factor
-        - POST
-        - PUT
-        - DELETE
-        - PATCH
-        - OPTIONS
 
 session:
   cookies:
