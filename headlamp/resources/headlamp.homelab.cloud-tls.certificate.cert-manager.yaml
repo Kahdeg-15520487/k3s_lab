@@ -3,6 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 
 metadata:
+  namespace: kube-system
   name: headlamp.homelab.cloud-tls
 spec:
   isCA: false
