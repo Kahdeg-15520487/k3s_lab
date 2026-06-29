@@ -4,7 +4,6 @@ metadata:
   name: authelia
   namespace: authelia
 spec:
-  clusterIP: None
   selector:
     app: authelia
   ports:
