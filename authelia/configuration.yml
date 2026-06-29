@@ -28,9 +28,6 @@ access_control:
     - domain:
         - "opencode.minhnguyenle.net"
       policy: one_factor
-      methods:
-        - GET
-        - HEAD
         - POST
         - PUT
         - DELETE
