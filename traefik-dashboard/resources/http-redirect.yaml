@@ -18,7 +18,7 @@ spec:
   entryPoints:
   - web
   routes:
-  - match: PathPrefix('/')
+  - match: PathPrefix(`/`)
     kind: Rule
     middlewares:
     - name: redirect-https
