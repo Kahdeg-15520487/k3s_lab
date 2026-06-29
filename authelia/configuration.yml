@@ -1,0 +1,58 @@
+---
+theme: dark
+
+server:
+  address: "tcp://0.0.0.0:9091"
+
+log:
+  level: info
+
+totp:
+  issuer: homelab.minhnguyenle.net
+
+authentication_backend:
+  file:
+    path: /config/users.yml
+    password:
+      algorithm: argon2id
+      iterations: 1
+      salt_length: 16
+      parallelism: 8
+      memory: 64
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: "auth.minhnguyenle.net"
+      policy: bypass
+    - domain:
+        - "opencode.minhnguyenle.net"
+      policy: one_factor
+
+session:
+  cookies:
+    - domain: minhnguyenle.net
+      authelia_url: https://auth.minhnguyenle.net
+      default_redirection_url: https://opencode.minhnguyenle.net
+      name: authelia_session
+      same_site: lax
+      expiration: 24h
+      inactivity: 4h
+
+regulation:
+  max_retries: 5
+  find_time: 2m
+  ban_time: 5m
+
+storage:
+  local:
+    path: /config/db.sqlite3
+  encryption_key: "a-very-secure-32-byte-key-for-enc!!"
+
+notifier:
+  filesystem:
+    filename: /config/notifications.txt
+
+identity_validation:
+  reset_password:
+    jwt_secret: "a-different-jwt-secret-for-reset-pass"

@@ -1,0 +1,5 @@
+users:
+  minh:
+    displayname: "Minh Le"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$zS6K0O03jBFrPvoaM+NU8A$v6Gm2uEd1mCGyS1OVaovEUm/OpFjOWQR9qasizxCe9A"
+    email: minh@minhnguyenle.net
